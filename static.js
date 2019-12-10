@@ -22,28 +22,32 @@ const myMap = mappa.staticMap(options);
 function preload() {
     // Load the  mapbox image
     img = loadImage(myMap.imgUrl);
-    magMap = loadImage('MagMap1.png');
+    magMap = loadImage('./images/MagMap1.png');
 }
 
 function setup() {
     createCanvas(1000, 800)
 
+    //input for the starting position of the drone
+    dx = window.prompt("Please Enter your UAV's Latitude, a suggestion is provided", 36.763);
+    dy = window.prompt("Please Enter your UAV's Longitude, a suggestion is provided", -116.611);
+
     //Top Left Coordinates  
-    inputX = createInput(" 36.775");
+    inputX = createInput();
     inputX.position(10, 810);
 
-    inputY = createInput("-116.611");
+    inputY = createInput();
     inputY.position(185, 810);
 
     //Bottom Right Coordinates 
-    inputX2 = createInput(" 36.763");
+    inputX2 = createInput();
     inputX2.position(360, 810);
 
-    inputY2 = createInput("-116.60");
+    inputY2 = createInput();
     inputY2.position(535, 810);
 
     //Path Spacing
-    inputSpacing = createInput("30");
+    inputSpacing = createInput();
     inputSpacing.position(710, 810);
 
     //Button to start animation 
@@ -70,15 +74,8 @@ function setup() {
     b = 0
 
     //Input coordinates for Path
-    // cannot change starting position of Path except inside code. 
-    l = inputX.value();
-    lg = inputY.value();
-    l2 = inputX2.value();
-    lg2 = inputY2.value();
-
-    d0 = myMap.latLngToPixel(l, lg);
-    d1 = myMap.latLngToPixel(l2, lg2);
-
+    d0 = myMap.latLngToPixel(dx, dy);
+    d1 = myMap.latLngToPixel(dx, dy);
     //Creating a path vector 
     path = new p5.Vector(floor(d0.x), ceil(d1.y))
 }
@@ -147,40 +144,43 @@ function draw() {
     function dronePath() {
         fill(255)
         noStroke();
-        if (path.x > ceil(d1.x)) {
+        if (path.x > ceil(brc.x)) {
             print('End')
-            path.x = floor(d0.x);
-            path.y = ceil(d1.y);
+            path.x = floor(tlc.x);
+            path.y = ceil(brc.y);
             g = 0;
             r = 255;
             b = 0
             vy = 0;
             vx = 0;
             noLoop();
-        } else if (vy < 0 && path.y > floor(d0.y)) {
+        } else if (vy < 0 && path.y > floor(tlc.y)) {
             print("Conditional 1")
 
-        } else if (path.y <= floor(d0.y) && path.x < floor(d0.x) + lines * spacing) {
+        } else if (path.y <= floor(tlc.y) && path.x < floor(tlc.x) + lines * spacing) {
             print("Conditional 2")
+            print(path.x, floor(tlc.x) + (lines * spacing))
+            print(path.y, floor(tlc.y));
+
             vy = 0;
             vx = 5;
-        } else if (path.x >= floor(d0.x) + (lines * spacing) && path.y == floor(d0.y)) {
+        } else if (path.x >= floor(tlc.x) + (lines * spacing) && path.y == floor(tlc.y) || path.x <= floor(tlc.x) + (lines * spacing) && path.y <= floor(tlc.y)) {
             print("Conditional 3")
-            path.x = floor(d0.x) + (lines * spacing);
+            path.x = floor(tlc.x) + (lines * spacing);
             vx = 0;
             vy = 5;
             lines += 1;
-        } else if (vy > 0 && path.y < ceil(d1.y)) {
+        } else if (vy > 0 && path.y < ceil(brc.y)) {
             print("Conditional 4")
 
-        } else if (path.y >= ceil(d1.y) && path.x < floor(d0.x) + lines * spacing) {
+        } else if (path.y >= ceil(brc.y) && path.x < floor(tlc.x) + lines * spacing) {
             print("Conditional 5")
-            path.y = ceil(d1.y);
+            path.y = ceil(brc.y);
             vy = 0;
             vx = 5;
-        } else if (path.x >= floor(d0.x) + (lines * spacing) && path.y == ceil(d1.y)) {
+        } else if (path.x >= floor(tlc.x) + (lines * spacing) && path.y == ceil(brc.y)) {
             print("Conditional 6")
-            path.x = floor(d0.x) + (lines * spacing);
+            path.x = floor(tlc.x) + (lines * spacing);
             vx = 0;
             vy = -5;
             lines += 1;
@@ -192,11 +192,8 @@ function draw() {
         path.y += vy;
     }
 
-    if (r == 255) {
-        tint(255, 128)
-        image(magMap, tlc.x, tlc.y, 510, 700);
 
-    }
+
     //Drawing the survey rectangle
     rectMode(CORNERS);
     strokeWeight(4);
